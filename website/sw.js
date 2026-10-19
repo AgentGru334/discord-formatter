@@ -1,0 +1,5 @@
+const CACHE='tb-formatter-v1.0.2';
+const FILES=['./','./index.html','./app.css','./app.js','./manifest.webmanifest','./TB_App_Icon_Ready_192.png','./TB_App_Icon_Ready_512.png'];
+self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(FILES)).then(()=>self.skipWaiting())));
+self.addEventListener('activate',event=>event.waitUntil(Promise.all([caches.keys().then(keys=>Promise.all(keys.filter(k=>k.startsWith('tb-formatter-')&&k!==CACHE).map(k=>caches.delete(k)))),self.clients.claim()])));
+self.addEventListener('fetch',event=>{if(event.request.method!=='GET'||new URL(event.request.url).origin!==self.location.origin)return;const url=new URL(event.request.url);if(!FILES.some(f=>new URL(f,self.registration.scope).pathname===url.pathname))return;if(['127.0.0.1','localhost'].includes(url.hostname)){event.respondWith(fetch(event.request).catch(()=>caches.match(event.request,{ignoreSearch:true})));return}event.respondWith(caches.match(event.request,{ignoreSearch:true}).then(cached=>cached||fetch(event.request)))});

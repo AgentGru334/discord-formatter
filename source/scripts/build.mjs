@@ -1,0 +1,14 @@
+import {build} from 'esbuild';
+import {cp,mkdir,rm} from 'node:fs/promises';
+import {dirname,join} from 'node:path';
+import {fileURLToPath} from 'node:url';
+const root=dirname(dirname(fileURLToPath(import.meta.url)));
+const dist=join(root,'dist');
+const website=join(root,'..','website');
+await rm(dist,{recursive:true,force:true});
+await mkdir(dist,{recursive:true});
+for(const file of ['index.html','app.css','manifest.webmanifest','sw.js','TB_App_Icon_Ready_192.png','TB_App_Icon_Ready_512.png'])await cp(join(root,'static',file),join(dist,file));
+await build({entryPoints:[join(root,'src','app.mjs')],outfile:join(dist,'app.js'),bundle:true,minify:true,format:'iife',target:['es2020']});
+await rm(website,{recursive:true,force:true});
+await cp(dist,website,{recursive:true});
+console.log(`Built the website in ${website}`);
